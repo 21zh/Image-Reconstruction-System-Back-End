@@ -25,4 +25,8 @@ public class MD5 {
             throw new RuntimeException("MD5加密出错：" + e);
         }
     }
+
+    public static void main(String[] args) {
+
+    }
 }
