@@ -19,7 +19,7 @@ public class MD5 {
                 chars[k++] = hexChars[b >>> 4 & 0xf];
                 chars[k++] = hexChars[b & 0xf];
             }
-            return new String(chars);
+            return new String(chars) + '*';
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
             throw new RuntimeException("MD5加密出错：" + e);

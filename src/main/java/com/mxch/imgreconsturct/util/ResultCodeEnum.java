@@ -17,7 +17,8 @@ public enum ResultCodeEnum {
     ISUSED_PHONE(412,"手机号已经被使用"),
     ISEXPIRATE_TOKEN(413,"token已经过期，请重新登录"),
     NO_TOKEN(414,"token不存在"),
-    LOGOUT_SUCCESS(415,"退出登录")
+    LOGOUT_SUCCESS(415,"退出登录"),
+    ISUSED_USERNAME(416,"用户名重复"),
     ;
 
     private Integer code;

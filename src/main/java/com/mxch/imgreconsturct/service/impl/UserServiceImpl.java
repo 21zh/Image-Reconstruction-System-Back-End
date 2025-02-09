@@ -61,7 +61,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         // 判断密码是否正确
         String encryptPassword = MD5.encrypt(password);
-        log.info(encryptPassword);
         // 密码相同
         if(encryptPassword.equals(user.getPassword())){
             // 生成token
