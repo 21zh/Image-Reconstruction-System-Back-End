@@ -19,7 +19,9 @@ public enum ResultCodeEnum {
     NO_TOKEN(414,"token不存在"),
     LOGOUT_SUCCESS(415,"退出登录"),
     ISUSED_USERNAME(416,"用户名重复"),
-    ISUSED_MODELTYPE(417,"该类型模型获取失败")
+    ISUSED_MODELTYPE(417,"该类型模型获取失败"),
+    NO_IMAGE(418,"图像为空"),
+    NO_MODEL(419,"模型为空")
     ;
 
     private Integer code;
