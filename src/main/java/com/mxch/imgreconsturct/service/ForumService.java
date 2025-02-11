@@ -8,7 +8,9 @@ import javax.servlet.http.HttpServletRequest;
 
 public interface ForumService extends IService<Forum> {
 
-    public Result getTypeForum(Integer typeId,String keyWord);
+    public Result getTypeForum(Integer typeId,String keyWord,String userName);
 
     public Result uploadForum(Forum forum, String userName);
+
+    public Result getUserInfo(Integer userId,String userName);
 }

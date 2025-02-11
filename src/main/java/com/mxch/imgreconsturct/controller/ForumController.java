@@ -24,8 +24,8 @@ public class ForumController {
      * @return
      */
     @GetMapping("/getTypeForum/{typeId}")
-    public Result getTypeForum(@PathVariable("typeId") Integer typeId, @PathParam("keyWord") String keyWord){
-        return forumService.getTypeForum(typeId,keyWord);
+    public Result getTypeForum(@PathVariable("typeId") Integer typeId, @PathParam("keyWord") String keyWord,@PathParam("userName") String userName){
+        return forumService.getTypeForum(typeId,keyWord,userName);
     }
 
     /**
@@ -36,5 +36,15 @@ public class ForumController {
     @PostMapping("/uploadForum")
     public Result uploadForum(@RequestBody Forum forum,@PathParam("userName") String userName){
         return forumService.uploadForum(forum,userName);
+    }
+
+    /**
+     * 获取用户的详细信息
+     * @param userId
+     * @return
+     */
+    @GetMapping("/getUserForum/{userId}")
+    public Result getUserInfo(@PathVariable("userId") Integer userId,@PathParam("userName") String userName){
+        return forumService.getUserInfo(userId,userName);
     }
 }

@@ -4,13 +4,16 @@ import cn.hutool.json.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.mxch.imgreconsturct.pojo.Forum;
 import com.mxch.imgreconsturct.pojo.Likes;
+import com.mxch.imgreconsturct.pojo.User;
 import com.mxch.imgreconsturct.service.ForumService;
 import com.mxch.imgreconsturct.service.LikeService;
+import com.mxch.imgreconsturct.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.HashMap;
@@ -18,12 +21,15 @@ import java.util.Map;
 
 @Slf4j
 @Controller
+@Transactional
 public class WebSocketController {
 
     @Resource
     private SimpMessagingTemplate messagingTemplate;
     @Resource
     private ForumService forumService;
+    @Resource
+    private UserService userService;
 
     @Resource
     private LikeService likeService;
@@ -36,7 +42,7 @@ public class WebSocketController {
         // 解析其中的数据
         JSONObject jsonMessage = new JSONObject(message);
         Integer id = jsonMessage.getInt("id");
-        Integer userId = jsonMessage.getInt("userId");
+        String userName = jsonMessage.getStr("userName");
         String action = jsonMessage.getStr("action");
         Boolean iLike = jsonMessage.getBool("iLike");
 
@@ -46,13 +52,18 @@ public class WebSocketController {
         log.info(String.valueOf(iLike));
         if (action.equals("likes")) {
             Integer likes = forum.getLikes();
+            LambdaQueryWrapper<User> queryWrapper1 = new LambdaQueryWrapper<>();
+            // 根据用户名查询id
+            queryWrapper1.eq(User::getUserName,userName);
+            User loginUser = userService.getOne(queryWrapper1);
+
             // 判断是点赞还是取消点赞
             if(iLike){
                 // 取消点赞
                 likes --;
                 // 删除点赞的数据
                 LambdaQueryWrapper<Likes> queryWrapper = new LambdaQueryWrapper<>();
-                queryWrapper.eq(Likes::getUserId,userId)
+                queryWrapper.eq(Likes::getUserId,loginUser.getId())
                         .eq(Likes::getForumId,id);
                 likeService.remove(queryWrapper);
             }else{
@@ -60,7 +71,7 @@ public class WebSocketController {
                 likes ++;
                 // 新增数据库点赞数据
                 Likes userLike = new Likes();
-                userLike.setUserId(userId);
+                userLike.setUserId(loginUser.getId());
                 userLike.setForumId(id);
                 likeService.save(userLike);
             }
