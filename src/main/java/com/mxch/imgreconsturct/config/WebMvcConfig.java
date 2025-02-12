@@ -24,6 +24,22 @@ public class WebMvcConfig implements WebMvcConfigurer {
         // 配置模型地址
         registry.addResourceHandler("/model/**")
                 .addResourceLocations("file:E:/server/resources/model/");
+
+        // 配置手绘重构的图像数据地址
+        registry.addResourceHandler("/handDraw/image/**")
+                .addResourceLocations("file:E:/server/resources/handDraw/image/");
+
+        // 配置手绘重构的模型数据地址
+        registry.addResourceHandler("/handDraw/model/**")
+                .addResourceLocations("file:E:/server/resources/handDraw/model/");
+
+        // 配置图像重构的图像数据地址
+        registry.addResourceHandler("/imageDraw/image/**")
+                .addResourceLocations("file:E:/server/resources/imageDraw/image/");
+
+        // 配置图像重构的模型数据地址
+        registry.addResourceHandler("/imageDraw/model/**")
+                .addResourceLocations("file:E:/server/resources/imageDraw/model/");
     }
 
     @Override
