@@ -22,7 +22,7 @@ public class HandUploadController {
     private static final String IMAGE_DIR = "E:/server/resources/handDraw/image/";
     private static final String MODEL_DIR = "E:/server/resources/handDraw/model/";
 
-    @PostMapping("/imageUpload")
+    @PostMapping("/handUpload")
     public Result handReconstruct(@RequestBody Map<String,String> imageData) throws IOException {
         try{
             // 解析图片数据
