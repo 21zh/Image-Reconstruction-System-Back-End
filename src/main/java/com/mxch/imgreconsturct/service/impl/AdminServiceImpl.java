@@ -13,6 +13,7 @@ import com.mxch.imgreconsturct.util.ResultCodeEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.jni.Local;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +28,9 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, User> implements 
 
     @Resource
     private AdminMapper adminMapper;
+
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
     /**
      * 用户分页查询逻辑处理
      * @param pageNo

@@ -14,4 +14,6 @@ public class UserPart {
     private String avatar;
     // 个性签名
     private String motto;
+    // 用户对象
+    private Integer roleId;
 }
