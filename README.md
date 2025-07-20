@@ -35,3 +35,9 @@
 ![联想截图_20250720161629](README.assets/联想截图_20250720161629.png)
 
 数据库文件为reimg.sql
+
+## 深度学习模型
+
+系统中实现二维图像到三维模型的重建所采用的模型是https://github.com/hzxie/Pix2Vox.git。
+
+所用的模型权重文件是https://github.com/hzxie/Pix2Vox.git资源中的[Pix2Vox-A](https://gateway.infinitescript.com/?fileName=Pix2Vox-A-ShapeNet.pth)权重文件。
