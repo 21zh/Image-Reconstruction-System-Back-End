@@ -1,12 +1,18 @@
 package com.mxch.imgreconsturct.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
+
+    @Autowired
+    RequestContextInterceptor requestContextInterceptor;
+
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         // 配置头像资源的地址
@@ -50,5 +56,12 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .allowedMethods("GET", "POST", "PUT", "DELETE")  // 允许的 HTTP 方法
                 .allowedHeaders("*")  // 允许所有请求头
                 .allowCredentials(true);  // 允许携带认证信息
+    }
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(requestContextInterceptor)
+                .addPathPatterns("/**")
+                .excludePathPatterns("/user/login", "/handDraw/handReconstructNotice");
     }
 }

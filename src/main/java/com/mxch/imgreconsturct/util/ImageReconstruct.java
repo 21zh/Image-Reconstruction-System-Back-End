@@ -1,13 +1,36 @@
 package com.mxch.imgreconsturct.util;
 
+import com.mxch.imgreconsturct.config.RestTemplateConfig;
+import com.mxch.imgreconsturct.pojo.dto.ReconstructDto;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
-import java.io.BufferedReader;
+import javax.annotation.Resource;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.Map;
+
 
 @Slf4j
+@Component
 public class ImageReconstruct {
+
+    @Resource
+    private RestTemplate restTemplate;
+
+    @Resource
+    private SimpMessagingTemplate messagingTemplate;
+
+    // 手绘重建的url地址
+    private static final String HAND_RECONSTRUCT_URL = "http://localhost:8000/handReconstruct";
+    // 摄影重建的url地址
+    private static final String IMAGE_RECONSTRUCT_URL = "http://localhost:8000/imageReconstruct";
+
     public static void reconstructImage(String imagePath, String modelPath) throws IOException, InterruptedException {
         try {
             // python脚本路径
@@ -22,5 +45,57 @@ public class ImageReconstruct {
         }catch (Exception e){
             e.printStackTrace();
         }
+    }
+
+    /**
+     * 发送三维重建请求
+     * @param type  类型
+     * @param imagePath 图像路径
+     * @param modelPath 模型路径
+     * @param userId    用户id
+     * @return  数据
+     */
+    public String reconstructByHandOrImage(boolean type, String imagePath, String modelPath, String userId) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        // 构造请求参数
+        Map<String, String> payload = new HashMap<>();
+        payload.put("imagePath", imagePath);
+        payload.put("modelPath", modelPath);
+        payload.put("userId", userId);
+
+        // 构造请求体
+        HttpEntity<Map<String, String>> entity = new HttpEntity<>(payload, headers);
+
+        return restTemplate.postForObject(type ? IMAGE_RECONSTRUCT_URL : HAND_RECONSTRUCT_URL, entity, String.class);
+    }
+
+    /**
+     * 推送手绘重建结果
+     * @param reconstructDto    重建结果
+     */
+    public void handSendToUser(ReconstructDto reconstructDto) {
+        String userId = reconstructDto.getUserId();
+
+        messagingTemplate.convertAndSendToUser(
+                userId,
+                "/queue/reconstruct/handNotice",
+                reconstructDto
+        );
+    }
+
+    /**
+     * 推送图像重建结果
+     * @param reconstructDto    重建结果
+     */
+    public void imageSendToUser(ReconstructDto reconstructDto) {
+        String userId = reconstructDto.getUserId();
+
+        messagingTemplate.convertAndSendToUser(
+                userId,
+                "/reconstruct/imageNotice",
+                reconstructDto
+        );
     }
 }

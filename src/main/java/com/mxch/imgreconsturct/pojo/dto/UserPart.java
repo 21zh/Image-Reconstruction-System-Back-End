@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserPart {
+    // 用户id
+    private String id;
     // 用户名
     private String userName;
     // 用户头像
