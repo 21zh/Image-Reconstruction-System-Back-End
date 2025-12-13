@@ -82,14 +82,14 @@ public class HandUploadController {
             InputStream inputStream = new ByteArrayInputStream(imageBytes);
 
             // 上传图像文件到oss
-            Map<String, String> paths = Aliyunoss.uploadAliyunOssByHand(inputStream, imageName, modelName);
+            Map<String, String> paths = Aliyunoss.uploadAliyunOssByHandOrImage(false, inputStream, imageName, modelName);
             if (paths.isEmpty()) {
                 return Result.fail("文件上传失败");
             }
 
             // 三维重建图像
             String userId = UserThreadLocal.getUserId();
-            imageReconstruct.reconstructByHandOrImage(false, paths.get("imagePath"), paths.get("modelPath"), userId);
+            imageReconstruct.reconstructByHandOrImage(false, "", paths.get("imagePath"), paths.get("modelPath"), userId);
 
             return Result.ok("任务已提交");
         } catch (Exception e) {

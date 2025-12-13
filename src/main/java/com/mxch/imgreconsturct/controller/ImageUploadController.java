@@ -3,9 +3,8 @@ package com.mxch.imgreconsturct.controller;
 import cn.hutool.core.util.RandomUtil;
 import com.mxch.imgreconsturct.pojo.ImageModel;
 import com.mxch.imgreconsturct.pojo.dto.ReconstructDto;
-import com.mxch.imgreconsturct.util.ImageReconstruct;
-import com.mxch.imgreconsturct.util.Result;
-import com.mxch.imgreconsturct.util.ResultCodeEnum;
+import com.mxch.imgreconsturct.service.ReconstructService;
+import com.mxch.imgreconsturct.util.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
@@ -13,14 +12,13 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import javax.annotation.Resource;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Slf4j
 @RestController
@@ -30,6 +28,9 @@ public class ImageUploadController {
 
     @Resource
     private ImageReconstruct imageReconstruct;
+
+    @Resource
+    private ReconstructService reconstructService;
 
     // 文件的存储路径
     private static final String IMAGE_DIR = "E:/server/resources/imageDraw/image/";
@@ -41,7 +42,7 @@ public class ImageUploadController {
      * @return
      */
     @PostMapping("/upload")
-    public Result imageReconstruct(@RequestParam("file") MultipartFile file) throws IOException {
+    public Result imageReconstructs(@RequestParam("file") MultipartFile file) throws IOException {
         // 检查文件是否为空
         if (file == null) {
             return Result.build(null, ResultCodeEnum.NO_FILE);
@@ -120,6 +121,39 @@ public class ImageUploadController {
         return Result.ok(imageModels);
     }
 
+    @PostMapping("/imageReconstruct")
+    public Result imageReconstruct(@RequestParam("file") MultipartFile file) {
+        // 检查文件是否为空
+        if (file == null) {
+            return Result.build(null, ResultCodeEnum.NO_FILE);
+        }
+
+        // 文件名称
+        UUID randomStr = UUID.randomUUID();
+        String imageName = randomStr + ".png";
+        String modelName = randomStr + ".binvox";
+
+        try{
+            InputStream inputStream = file.getInputStream();
+
+            // 上传图像到oss中
+            Map<String, String> path = Aliyunoss.uploadAliyunOssByHandOrImage(true, inputStream, imageName, modelName);
+            if (path.isEmpty()) {
+                return Result.fail("文件上传失败");
+            }
+
+            // 三维重建图像
+            String userId = UserThreadLocal.getUserId();
+            imageReconstruct.reconstructByHandOrImage(true, file.getOriginalFilename(), path.get("imagePath"), path.get("modelPath"), userId);
+
+            // 放回结果
+            return Result.ok("任务已提交");
+
+        }catch (Exception e){
+            return Result.fail("任务出错，请重试");
+        }
+    }
+
     /**
      * 方法回调获取图像三维重建结果
      * @param reconstructDto    三维重建结果
@@ -127,10 +161,14 @@ public class ImageUploadController {
      */
     @PostMapping("/imageReconstructNotice")
     public Result imageReconstructNotice(@RequestBody ReconstructDto reconstructDto) {
+        List<ReconstructDto> reconstructDtos = new ArrayList<>();
         try {
+            reconstructDtos.add(reconstructDto);
             // 发送给对应用户
-            imageReconstruct.handSendToUser(reconstructDto);
+            imageReconstruct.imageSendToUser(reconstructDtos);
 
+            // 存储数据库
+            reconstructService.addReconstruct(true, reconstructDto);
             return Result.ok();
         } catch (Exception e) {
             return Result.fail();

@@ -9,6 +9,7 @@ import com.aliyun.oss.model.Bucket;
 import com.aliyun.oss.model.PutObjectRequest;
 import com.aliyun.oss.model.PutObjectResult;
 import com.aliyuncs.exceptions.ClientException;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.util.HashMap;
@@ -67,7 +68,15 @@ public class Aliyunoss {
         System.out.println("OSS客户端已关闭");
     }
 
-    public static Map<String, String> uploadAliyunOssByHand(InputStream inputStream, String imageName, String modelName) throws Exception {
+    /**
+     * 上传手绘图像到oss
+     * @param inputStream 二进制文件流
+     * @param imageName 图像名称
+     * @param modelName 模型名称
+     * @return
+     * @throws Exception
+     */
+    public static Map<String, String> uploadAliyunOssByHandOrImage(boolean type, InputStream inputStream, String imageName, String modelName) throws Exception {
         // 路径结果
         Map<String, String> resultMap = new HashMap<>();
         // Endpoint华东1（杭州）
@@ -80,6 +89,11 @@ public class Aliyunoss {
         // 填写Object完整路径，完整路径中不能包含Bucket名称
         String objectName = "handFile/" + imageName;
         String modelObjectName = "handFile/" + modelName;
+        // 上传摄影图像
+        if (type) {
+            objectName = "imageFile/" + imageName;
+            modelObjectName = "imageFile/" + modelName;
+        }
         // 填写本地文件的完整路径
         // 如果未指定本地路径，则默认从示例程序所属项目对应本地路径中上传文件流。
 //        String filePath= "D:\\localpath\\examplefile.txt";

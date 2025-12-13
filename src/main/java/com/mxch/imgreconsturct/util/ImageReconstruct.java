@@ -1,6 +1,5 @@
 package com.mxch.imgreconsturct.util;
 
-import com.mxch.imgreconsturct.config.RestTemplateConfig;
 import com.mxch.imgreconsturct.pojo.dto.ReconstructDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
@@ -13,6 +12,7 @@ import org.springframework.web.client.RestTemplate;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -50,17 +50,19 @@ public class ImageReconstruct {
     /**
      * 发送三维重建请求
      * @param type  类型
+     * @param imageName 图像名称
      * @param imagePath 图像路径
      * @param modelPath 模型路径
      * @param userId    用户id
      * @return  数据
      */
-    public String reconstructByHandOrImage(boolean type, String imagePath, String modelPath, String userId) {
+    public String reconstructByHandOrImage(boolean type, String imageName, String imagePath, String modelPath, String userId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         // 构造请求参数
         Map<String, String> payload = new HashMap<>();
+        payload.put("imageName", imageName);
         payload.put("imagePath", imagePath);
         payload.put("modelPath", modelPath);
         payload.put("userId", userId);
@@ -89,12 +91,12 @@ public class ImageReconstruct {
      * 推送图像重建结果
      * @param reconstructDto    重建结果
      */
-    public void imageSendToUser(ReconstructDto reconstructDto) {
-        String userId = reconstructDto.getUserId();
+    public void imageSendToUser(List<ReconstructDto> reconstructDto) {
+        String userId = reconstructDto.get(0).getUserId();
 
         messagingTemplate.convertAndSendToUser(
                 userId,
-                "/reconstruct/imageNotice",
+                "/queue/reconstruct/imageNotice",
                 reconstructDto
         );
     }

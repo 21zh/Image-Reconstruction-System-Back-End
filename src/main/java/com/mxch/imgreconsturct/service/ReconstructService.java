@@ -5,5 +5,5 @@ import com.mxch.imgreconsturct.pojo.Reconstruct;
 import com.mxch.imgreconsturct.pojo.dto.ReconstructDto;
 
 public interface ReconstructService extends IService<Reconstruct> {
-    void addReconstruct(boolean flag, ReconstructDto reconstructDto);
+    void addReconstruct(boolean type, ReconstructDto reconstructDto);
 }

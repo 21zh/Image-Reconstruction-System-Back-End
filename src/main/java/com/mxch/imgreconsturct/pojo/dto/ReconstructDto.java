@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 public class ReconstructDto {
     // 用户id
     private String userId;
+    // 图像名称
+    private String imageName;
     // 图片路径
     private String imagePath;
     // 模型路径

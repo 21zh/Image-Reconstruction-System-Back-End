@@ -21,13 +21,13 @@ public class ReconstructServiceImpl extends ServiceImpl<ReconstructMapper, Recon
      * @param reconstructDto    重建结果
      */
     @Override
-    public void addReconstruct(boolean flag, ReconstructDto reconstructDto) {
+    public void addReconstruct(boolean type, ReconstructDto reconstructDto) {
         // 存储结果实体
         Reconstruct reconstruct = new Reconstruct();
 
         // 拷贝字段数据
         BeanUtils.copyProperties(reconstructDto, reconstruct);
-        reconstruct.setType(flag ? 1 : 0);
+        reconstruct.setType(type ? 1 : 0);
         reconstruct.setCreateTime(LocalDateTime.now());
         reconstruct.setUpdateTime(LocalDateTime.now());
 
