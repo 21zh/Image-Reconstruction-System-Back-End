@@ -12,12 +12,9 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import javax.annotation.Resource;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 
 @Slf4j
@@ -85,7 +82,7 @@ public class ImageUploadController {
      * @throws InterruptedException
      */
     @PostMapping("/fileUpload")
-    public Result fileReconstruct(MultipartHttpServletRequest request) throws IOException, InterruptedException {
+    public Result fileReconstructs(MultipartHttpServletRequest request) throws IOException, InterruptedException {
         // 放回的数据结果
         List<ImageModel> imageModels = new ArrayList<>();
         // 判断文件夹是否为空
@@ -154,6 +151,46 @@ public class ImageUploadController {
         }
     }
 
+    @PostMapping("/fileReconstruct")
+    public Result fileReconstruct(MultipartHttpServletRequest request) {
+        // 判断文件夹是否为空
+        if(request.getFiles("files").isEmpty()){
+            return Result.fail();
+        }
+        for (MultipartFile file : request.getFiles("files")) {
+            String fileName = StringUtils.cleanPath(file.getOriginalFilename());
+            // 文件类型必须为图片类型
+            if(!fileName.endsWith(".png") && fileName.endsWith(".jpg") && !fileName.endsWith(".jpeg")) {
+                continue;
+            }
+
+            // 文件名称
+            UUID randomStr = UUID.randomUUID();
+            String imageName = randomStr + ".png";
+            String modelName = randomStr + ".binvox";
+
+            try{
+                InputStream inputStream = file.getInputStream();
+
+                // 上传图像到oss中
+                Map<String, String> path = Aliyunoss.uploadAliyunOssByHandOrImage(true, inputStream, imageName, modelName);
+                if (path.isEmpty()) {
+                    return Result.fail("文件上传失败");
+                }
+
+                // 三维重建图像
+                String userId = UserThreadLocal.getUserId();
+                imageReconstruct.reconstructByHandOrImage(true, file.getOriginalFilename(), path.get("imagePath"), path.get("modelPath"), userId);
+
+            }catch (Exception e){
+                return Result.fail("任务出错，请重试");
+            }
+        }
+        // 放回结果
+        return Result.ok("任务已提交");
+    }
+
+
     /**
      * 方法回调获取图像三维重建结果
      * @param reconstructDto    三维重建结果
@@ -161,11 +198,9 @@ public class ImageUploadController {
      */
     @PostMapping("/imageReconstructNotice")
     public Result imageReconstructNotice(@RequestBody ReconstructDto reconstructDto) {
-        List<ReconstructDto> reconstructDtos = new ArrayList<>();
         try {
-            reconstructDtos.add(reconstructDto);
             // 发送给对应用户
-            imageReconstruct.imageSendToUser(reconstructDtos);
+            imageReconstruct.imageSendToUser(reconstructDto);
 
             // 存储数据库
             reconstructService.addReconstruct(true, reconstructDto);

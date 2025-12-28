@@ -91,8 +91,8 @@ public class ImageReconstruct {
      * 推送图像重建结果
      * @param reconstructDto    重建结果
      */
-    public void imageSendToUser(List<ReconstructDto> reconstructDto) {
-        String userId = reconstructDto.get(0).getUserId();
+    public void imageSendToUser(ReconstructDto reconstructDto) {
+        String userId = reconstructDto.getUserId();
 
         messagingTemplate.convertAndSendToUser(
                 userId,
