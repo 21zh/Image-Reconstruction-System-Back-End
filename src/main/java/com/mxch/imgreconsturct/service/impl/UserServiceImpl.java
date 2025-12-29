@@ -15,6 +15,7 @@ import com.mxch.imgreconsturct.service.UserService;
 import com.mxch.imgreconsturct.util.MD5;
 import com.mxch.imgreconsturct.util.Result;
 import com.mxch.imgreconsturct.util.ResultCodeEnum;
+import com.mxch.imgreconsturct.util.SendCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -113,9 +114,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // 生成token
         String token = UUID.randomUUID().toString(true);
         // 将用户信息和token存入到redis中
-        UserPart uerPart = BeanUtil.copyProperties(user,UserPart.class);
+        UserPart userPart = BeanUtil.copyProperties(user,UserPart.class);
+        userPart.setRoleId(1);
         // 将对象转成hashMap存储
-        Map<String, Object> userPartMap = BeanUtil.beanToMap(uerPart, new HashMap<>(),
+        Map<String, Object> userPartMap = BeanUtil.beanToMap(userPart, new HashMap<>(),
                 CopyOptions.create()
                         .setIgnoreNullValue(true)
                         .setFieldValueEditor((fieldName, fieldValue) -> fieldValue.toString()));
@@ -141,8 +143,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         // 生成验证码
         String code = RandomUtil.randomNumbers(6);
-        // 将手机号和验证码保存到redis中
-        stringRedisTemplate.opsForValue().set(LOGIN_CODE_KEY + phone,code,LOGIN_CODE_TTL, TimeUnit.MINUTES);
+        // 发送验证码
+        try {
+            SendCode.sendCodeMessage(phone, code);
+            // 将手机号和验证码保存到redis中
+            stringRedisTemplate.opsForValue().set(LOGIN_CODE_KEY + phone,code,LOGIN_CODE_TTL, TimeUnit.MINUTES);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
         // 短信发送验证码
         log.info("验证码为" + code);
         return Result.ok();

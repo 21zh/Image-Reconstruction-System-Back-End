@@ -62,6 +62,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(requestContextInterceptor)
                 .addPathPatterns("/**")
-                .excludePathPatterns("/user/login", "/handDraw/handReconstructNotice", "/imageDraw/imageReconstructNotice");
+                .excludePathPatterns("/user/login", "/avatar/upload", "/user/sendCode", "/user/register", "/handDraw/handReconstructNotice", "/imageDraw/imageReconstructNotice");
     }
 }

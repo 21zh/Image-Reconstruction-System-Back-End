@@ -134,4 +134,46 @@ public class Aliyunoss {
         return resultMap;
     }
 
+    public static String uploadAliyunOssByAvatar(InputStream inputStream, String avatarName) throws Exception {
+        // 头像存储路径
+        String avatarPath = "";
+        // Endpoint华东1（杭州）
+        String endpoint = "https://oss-cn-hangzhou.aliyuncs.com";
+        // 从环境变量中获取访问凭证
+        EnvironmentVariableCredentialsProvider credentialsProvider = CredentialsProviderFactory.newEnvironmentVariableCredentialsProvider();
+        // 填写Bucket名称，例如examplebucket。
+        String bucketName = "mxch-defaultsfiles";
+        // 填写Object完整路径，完整路径中不能包含Bucket名称
+        String objectName = "avatarfiles/" + avatarName;
+        // 填写Bucket所在地域。以华东1（杭州）为例，Region填写为cn-hangzhou。
+        String region = "cn-hangzhou";
+        // 创建OSSClient实例。
+        // 当OSSClient实例不再使用时，调用shutdown方法以释放资源。
+        ClientBuilderConfiguration clientBuilderConfiguration = new ClientBuilderConfiguration();
+        clientBuilderConfiguration.setSignatureVersion(SignVersion.V4);
+        OSS ossClient = OSSClientBuilder.create()
+                .endpoint(endpoint)
+                .credentialsProvider(credentialsProvider)
+                .clientConfiguration(clientBuilderConfiguration)
+                .region(region)
+                .build();
+        try {
+            // 创建PutObjectRequest对象。
+            PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, objectName, inputStream);
+            // 创建PutObject请求。
+            PutObjectResult result = ossClient.putObject(putObjectRequest);
+            avatarPath = "https://" + bucketName + ".oss-cn-hangzhou.aliyuncs.com/" + objectName;
+        } catch (OSSException oe) {
+            System.out.println("Caught an OSSException, which means your request made it to OSS, "
+                    + "but was rejected with an error response for some reason.");
+            System.out.println("Error Message:" + oe.getErrorMessage());
+            System.out.println("Error Code:" + oe.getErrorCode());
+            System.out.println("Request ID:" + oe.getRequestId());
+            System.out.println("Host ID:" + oe.getHostId());
+        } finally {
+            ossClient.shutdown();
+        }
+        return avatarPath;
+    }
+
 }
