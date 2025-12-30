@@ -11,6 +11,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.UUID;
 
+import static com.mxch.imgreconsturct.util.OssConstants.AVATAR_FILES;
+import static com.mxch.imgreconsturct.util.OssConstants.DEFAULT_BUCKET_NAME;
+
 @RestController
 @RequestMapping("/avatar")
 @CrossOrigin(origins = "*")
@@ -26,11 +29,12 @@ public class AvatarUploadController {
         }
 
         String avatarName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+        String objectName = AVATAR_FILES + avatarName;
 
         try {
             // 转化为文件流
             InputStream inputStream = file.getInputStream();
-            String avatarPath = Aliyunoss.uploadAliyunOssByAvatar(inputStream, avatarName);
+            String avatarPath = Aliyunoss.uploadAliyunOssByFiles(inputStream, DEFAULT_BUCKET_NAME, objectName);
 
             // 判断头像存储路径是否存在
             /*File avatarDir = new File(AVATAR_DIR);

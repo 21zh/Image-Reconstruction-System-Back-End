@@ -12,6 +12,7 @@ import com.mxch.imgreconsturct.pojo.RoomUser;
 import com.mxch.imgreconsturct.pojo.Stroke;
 import com.mxch.imgreconsturct.pojo.User;
 import com.mxch.imgreconsturct.pojo.dto.RoomDto;
+import com.mxch.imgreconsturct.pojo.dto.RoomMsg;
 import com.mxch.imgreconsturct.pojo.dto.StrokeDto;
 import com.mxch.imgreconsturct.service.RoomService;
 import com.mxch.imgreconsturct.service.RoomUserService;
@@ -22,7 +23,10 @@ import com.mxch.imgreconsturct.util.Result;
 import com.mxch.imgreconsturct.util.UserThreadLocal;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +34,8 @@ import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.mxch.imgreconsturct.util.RedisConstants.ROOM_COUNT_KEY;
 
 @Service
 @Slf4j
@@ -53,6 +59,15 @@ public class RoomServiceImpl extends ServiceImpl<RoomMapper, Room> implements Ro
 
     @Resource
     private StrokeMapper strokeMapper;
+
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
+
+    @Resource
+    private LuaRedisServiceImpl luaRedisService;
+
+    @Resource
+    private RabbitTemplate rabbitTemplate;
 
     /**
      * 创建房间
@@ -88,6 +103,8 @@ public class RoomServiceImpl extends ServiceImpl<RoomMapper, Room> implements Ro
         roomUser.setUserId(newRoom.getUserId());
         roomUser.setJoinTime(newRoom.getCreateTime());
 
+        String roomKey = ROOM_COUNT_KEY + newRoom.getId();
+        stringRedisTemplate.opsForValue().set(roomKey, String.valueOf(newRoom.getMaxUser() - newRoom.getUserNum()));
         roomUserService.save(roomUser);
 
         return newRoom.getId();
@@ -104,6 +121,8 @@ public class RoomServiceImpl extends ServiceImpl<RoomMapper, Room> implements Ro
         String userId = roomUser.getUserId();
         String roomId = roomUser.getRoomId();
 
+        String roomKey = ROOM_COUNT_KEY + roomId;
+
         // 查询相关房间信息
         Room room = getById(roomId);
         // 房主退出
@@ -113,6 +132,12 @@ public class RoomServiceImpl extends ServiceImpl<RoomMapper, Room> implements Ro
             updateById(room);
             qw.eq("room_id", roomId);
             roomUserService.remove(qw);
+
+            // 删除redis中的房间消息
+            Boolean isExist = stringRedisTemplate.hasKey(roomKey);
+            if (Boolean.TRUE.equals(isExist)) {
+                stringRedisTemplate.delete(roomKey);
+            }
             return;
         }
 
@@ -121,6 +146,11 @@ public class RoomServiceImpl extends ServiceImpl<RoomMapper, Room> implements Ro
         updateById(room);
         qw.eq("user_id", userId);
         roomUserService.remove(qw);
+
+        // 更新redis中的人数
+        if (Boolean.TRUE.equals(stringRedisTemplate.hasKey(roomKey))) {
+            stringRedisTemplate.opsForValue().set(roomKey, String.valueOf(Integer.parseInt(stringRedisTemplate.opsForValue().get(roomKey)) - 1));
+        }
     }
 
     /**
@@ -185,25 +215,25 @@ public class RoomServiceImpl extends ServiceImpl<RoomMapper, Room> implements Ro
             }
         }
 
-        int nowNum = orignalRoom.getUserNum();
-
-        if (nowNum == orignalRoom.getMaxUser()) {
-            return Result.fail("房间人数已满");
-        }
-
         if (UserThreadLocal.getUserId().equals(room.getUserId())) {
             return Result.fail("已在房间中");
         }
 
-        room.setUserNum(++nowNum);
-        room.setUpdateTime(LocalDateTime.now());
-        updateById(room);
+        String queueName = "room.queue";
+        Long res = luaRedisService.execute(UserThreadLocal.getUserId(), String.valueOf(room.getId()));
 
-        RoomUser roomUser = new RoomUser();
-        roomUser.setRoomId(String.valueOf(room.getId()));
-        roomUser.setUserId(UserThreadLocal.getUserId());
-        roomUser.setJoinTime(LocalDateTime.now());
-        roomUserService.save(roomUser);
+        switch (res.intValue()) {
+            case 1:
+                // 发送消息给消息队列
+                rabbitTemplate.convertAndSend(queueName, new RoomMsg(room.getId(), UserThreadLocal.getUserId()));
+                break;
+            case 0:
+                throw new RuntimeException("房间人数已满");
+            case -2:
+                throw new RuntimeException("用户重复加入");
+            default:
+                throw new RuntimeException("系统出现异常");
+        }
 
         return Result.ok("成功加入房间");
     }

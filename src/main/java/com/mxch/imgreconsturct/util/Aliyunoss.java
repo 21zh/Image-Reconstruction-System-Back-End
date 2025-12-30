@@ -16,6 +16,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.mxch.imgreconsturct.util.OssConstants.*;
+
 public class Aliyunoss {
 
     public static void main(String[] args) {
@@ -83,16 +85,13 @@ public class Aliyunoss {
         String endpoint = "https://oss-cn-hangzhou.aliyuncs.com";
         // 从环境变量中获取访问凭证
         EnvironmentVariableCredentialsProvider credentialsProvider = CredentialsProviderFactory.newEnvironmentVariableCredentialsProvider();
-        // 填写Bucket名称，例如examplebucket。
-        String bucketName = "mxch-imagefiles";
-        String modelBucketName = "mxch-modelfiles";
         // 填写Object完整路径，完整路径中不能包含Bucket名称
-        String objectName = "handFile/" + imageName;
-        String modelObjectName = "handFile/" + modelName;
+        String objectName = HAND_FILE + imageName;
+        String modelObjectName = HAND_FILE + modelName;
         // 上传摄影图像
         if (type) {
-            objectName = "imageFile/" + imageName;
-            modelObjectName = "imageFile/" + modelName;
+            objectName = IMAGE_FILE + imageName;
+            modelObjectName = IMAGE_FILE + modelName;
         }
         // 填写本地文件的完整路径
         // 如果未指定本地路径，则默认从示例程序所属项目对应本地路径中上传文件流。
@@ -113,11 +112,11 @@ public class Aliyunoss {
 
         try {
             // 创建PutObjectRequest对象。
-            PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, objectName, inputStream);
+            PutObjectRequest putObjectRequest = new PutObjectRequest(IMAGE_BUCKET_NAME, IMAGE_BUCKET_NAME, inputStream);
             // 创建PutObject请求。
             PutObjectResult result = ossClient.putObject(putObjectRequest);
-            String imagePath = "https://" + bucketName + ".oss-cn-hangzhou.aliyuncs.com/" + objectName;
-            String modelPath = "https://" + modelBucketName + ".oss-cn-hangzhou.aliyuncs.com/" + modelObjectName;
+            String imagePath = "https://" + IMAGE_BUCKET_NAME + ".oss-cn-hangzhou.aliyuncs.com/" + objectName;
+            String modelPath = "https://" + MODEL_BUCKET_NAME + ".oss-cn-hangzhou.aliyuncs.com/" + modelObjectName;
             resultMap.put("imagePath", imagePath);
             resultMap.put("modelPath", modelPath);
         } catch (OSSException oe) {
@@ -134,7 +133,7 @@ public class Aliyunoss {
         return resultMap;
     }
 
-    public static String uploadAliyunOssByAvatar(InputStream inputStream, String avatarName) throws Exception {
+    public static String uploadAliyunOssByFiles(InputStream inputStream, String bucketName, String objectName) throws Exception {
         // 头像存储路径
         String avatarPath = "";
         // Endpoint华东1（杭州）
@@ -142,9 +141,9 @@ public class Aliyunoss {
         // 从环境变量中获取访问凭证
         EnvironmentVariableCredentialsProvider credentialsProvider = CredentialsProviderFactory.newEnvironmentVariableCredentialsProvider();
         // 填写Bucket名称，例如examplebucket。
-        String bucketName = "mxch-defaultsfiles";
+//        String bucketName = "mxch-defaultsfiles";
         // 填写Object完整路径，完整路径中不能包含Bucket名称
-        String objectName = "avatarfiles/" + avatarName;
+//        String objectName = "avatarfiles/" + avatarName;
         // 填写Bucket所在地域。以华东1（杭州）为例，Region填写为cn-hangzhou。
         String region = "cn-hangzhou";
         // 创建OSSClient实例。
