@@ -1,6 +1,15 @@
 server:
   port: 1800
 spring:
+  rabbitmq:
+    host: 192.168.243.100
+    port: 5672
+    virtual-host: /
+    username: mxch
+    password: 123321
+    listener:
+      simple:
+        prefetch: 1 # 每次只能获取一条消息，处理完成才能获取下一个消息
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher

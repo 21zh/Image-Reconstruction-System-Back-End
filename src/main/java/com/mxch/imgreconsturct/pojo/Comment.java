@@ -12,27 +12,17 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@TableName("tb_forum")
-public class Forum {
+@TableName("tb_comment")
+public class Comment {
     // id
     @TableId(value = "id",type =  IdType.AUTO)
     private Integer id;
     // 用户id
-    private Integer userId;
-    // 类型id
-    private Integer typeId;
-    // 标题
-    private String title;
-    // 图像
-    private String image;
-    // 模型
-    private String model;
-    // 点赞量
-    private Integer likes;
-    // 评论数
-    private Integer comments;
-    // 下载量
-    private Integer downloads;
+    private String userId;
+    // 帖子id
+    private String forumId;
+    // 帖子内容
+    private String commentMsg;
     // 创建时间
     private LocalDateTime createTime;
 }

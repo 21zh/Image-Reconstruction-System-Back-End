@@ -81,7 +81,7 @@ public class WebSocketController {
             map.put("likes",likes);
             // 推送新的点赞量
             messagingTemplate.convertAndSend("/forum/likes", map);
-        } else {
+        } else if (action.equals("downloads")){
             // 下载事件
             // 更新下载量
             Integer downloads = forum.getDownloads() + 1;
@@ -91,6 +91,16 @@ public class WebSocketController {
             map.put("downloads",downloads);
             // 推送新的下载量
             messagingTemplate.convertAndSend("/forum/downloads", map);
+        } else if (action.equals("comments")) {
+            // 评论事件
+            // 更新评论数
+            int comments = forum.getComments() + 1;
+            forum.setComments(comments);
+            // 更新数据库数据
+            forumService.updateById(forum);
+            map.put("comments", comments);
+            // 推送新的评论数
+            messagingTemplate.convertAndSend("/forum/comments", map);
         }
     }
 }

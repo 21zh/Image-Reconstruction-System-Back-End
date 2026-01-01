@@ -5,7 +5,6 @@ import com.mxch.imgreconsturct.pojo.RoomUser;
 import com.mxch.imgreconsturct.pojo.dto.RoomMsg;
 import com.mxch.imgreconsturct.service.RoomService;
 import com.mxch.imgreconsturct.service.RoomUserService;
-import com.mxch.imgreconsturct.util.UserThreadLocal;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
