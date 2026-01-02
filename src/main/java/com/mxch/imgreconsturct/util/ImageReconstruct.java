@@ -100,4 +100,18 @@ public class ImageReconstruct {
                 reconstructDto
         );
     }
+
+    /**
+     * 推送ai协作的结果
+     * @param reconstructDto ai协作的结果
+     */
+    public void aiSendToUser(ReconstructDto reconstructDto) {
+        String userId = reconstructDto.getUserId();
+
+        messagingTemplate.convertAndSendToUser(
+                userId,
+                "/queue/reconstruct/aiNotice",
+                reconstructDto
+        );
+    }
 }

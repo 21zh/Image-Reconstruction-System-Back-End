@@ -8,7 +8,13 @@ import org.springframework.context.annotation.Configuration;
 public class RabbitmqConfig {
 
     @Bean
-    public Queue simpleQueue() {
+    public Queue roomQueue() {
         return new Queue("room.queue");
     }
+
+    @Bean
+    public Queue aiQueue() {
+        return new Queue("ai.queue");
+    }
+
 }

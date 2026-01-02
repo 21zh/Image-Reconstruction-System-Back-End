@@ -18,4 +18,6 @@ public class OssConstants {
     public static final String AVATAR_FILES = "avatarfiles/";
     public static final String DATA_FILES = "datafiles/";
     public static final String TYPE_FILES = "typefiles/";
+    public static final String AI_SOURCE_FILES = "aifiles/sourcefiles/";
+    public static final String AI_TARGET_FILES = "aifiles/targetfiles/";
 }

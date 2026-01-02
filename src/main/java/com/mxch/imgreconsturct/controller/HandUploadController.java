@@ -2,6 +2,7 @@ package com.mxch.imgreconsturct.controller;
 
 import cn.hutool.json.JSONUtil;
 import com.google.gson.JsonObject;
+import com.mxch.imgreconsturct.pojo.dto.AiDto;
 import com.mxch.imgreconsturct.pojo.dto.ReconstructDto;
 import com.mxch.imgreconsturct.service.ReconstructService;
 import com.mxch.imgreconsturct.util.Aliyunoss;
@@ -9,6 +10,7 @@ import com.mxch.imgreconsturct.util.ImageReconstruct;
 import com.mxch.imgreconsturct.util.Result;
 import com.mxch.imgreconsturct.util.UserThreadLocal;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -36,6 +38,9 @@ public class HandUploadController {
 
     @Resource
     private ReconstructService reconstructService;
+
+    @Resource
+    private RabbitTemplate rabbitTemplate;
 
     @PostMapping("/handUpload")
     public Result handUpload(@RequestBody Map<String,String> imageData) throws IOException {
@@ -113,6 +118,24 @@ public class HandUploadController {
             return Result.ok();
         } catch (Exception e) {
             return Result.fail();
+        }
+    }
+
+    /**
+     * 上传AI协作任务到消息队列中
+     * @param aiDto
+     * @return
+     */
+    @PostMapping("/aiCooperation")
+    public Result aiCooperation(@RequestBody AiDto aiDto) {
+        try {
+            String queueName = "ai.queue";
+            // 将任务上传消息队列
+            rabbitTemplate.convertAndSend(queueName, aiDto);
+
+            return Result.ok();
+        } catch (Exception e) {
+            return Result.fail("AI协作任务上传失败");
         }
     }
 

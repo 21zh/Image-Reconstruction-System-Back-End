@@ -25,7 +25,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -149,7 +148,7 @@ public class RoomServiceImpl extends ServiceImpl<RoomMapper, Room> implements Ro
 
         // 更新redis中的人数
         if (Boolean.TRUE.equals(stringRedisTemplate.hasKey(roomKey))) {
-            stringRedisTemplate.opsForValue().set(roomKey, String.valueOf(Integer.parseInt(stringRedisTemplate.opsForValue().get(roomKey)) - 1));
+            stringRedisTemplate.opsForValue().set(roomKey, String.valueOf(Integer.parseInt(stringRedisTemplate.opsForValue().get(roomKey)) + 1));
         }
     }
 
